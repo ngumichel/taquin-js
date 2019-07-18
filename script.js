@@ -21,15 +21,14 @@ const empty_cell = {i: 0, j: 0};
 // Initialisation de l'état courant
 function setInitState() {
     current_state = [];     // on vide le tableau
-    var l = side;           // l = nombre de cases par côté
-    for (var i = 0; i < l; i++) {
+    for (let i = 0; i < side; i++) {
         current_state[i] = [];
         win_state[i] = [];
-        for (var j = 0; j < l; j++) {
-            if (i == l - 1 && j == l - 1) {
+        for (var j = 0; j < side; j++) {
+            if (i === side - 1 && j === side - 1) {
                 val = 0;
             } else {
-                val = i * l + j + 1;
+                val = i * side + j + 1;
             }
             current_state[i][j] = val;
             win_state[i][j] = val;
@@ -41,9 +40,9 @@ function setInitState() {
 
 // Randomiser l'état courant
 function doRandomShuffle(state, cell) {
-    var temp_state = [];
+    let temp_state = [];
 
-    for ( var i = 0; i < side*side; i++) {
+    for ( let i = 0; i < side*side; i++) {
         temp_state.push(i);
     }
 
@@ -53,11 +52,10 @@ function doRandomShuffle(state, cell) {
         return 0.5 - Math.random()
     });
 
-    var l = side;
-    for (var i = 0; i < l; i++) {
-        for (var j = 0; j < l; j++) {
-            state[i][j] = temp_state[i * l + j];
-            if (temp_state[i * l + j] === 0) {
+    for (let i = 0; i < side; i++) {
+        for (let j = 0; j < side; j++) {
+            state[i][j] = temp_state[i * side + j];
+            if (temp_state[i * side + j] === 0) {
                 cell.i = i;
                 cell.j = j;
             }
@@ -119,7 +117,6 @@ function applyMove(state, ec, move) {
             console.log("toto");
     }
     console.log("Movement:", move)
-
 }
 
 
@@ -146,7 +143,6 @@ $(".check").click(function () {
     // TODO: penser à implémenter la fonction checkWin
 });
 
-
 $(".reset").click(reset);
 
 $(".shuffle").click(function () {
@@ -159,7 +155,6 @@ $(".solution").click(function () {
     console.log("Solution demandée par l'utilisateur·ice")
     findSolution(current_state, empty_cell);
 });
-
 
 // Pour augmenter / diminuer la taille d'un côté.
 $(".plus").click(function () {
@@ -174,7 +169,6 @@ $(".minus").click(function () {
     console.log("Plus petit")
 });
 
-
 // Ici on gere l'ajout dynamique de .item
 $(".grid").on('click', '.item', function () {
     console.log("J'existe et resisterai à ma mort dans un reset/ shuffle ",
@@ -183,29 +177,25 @@ $(".grid").on('click', '.item', function () {
         "Position j:", $(this).attr("data-j"),
     );
 
-    var cupo = {
+    var cur_pos = {
         i: parseInt($(this).attr("data-i")),
         j: parseInt($(this).attr("data-j"))
     };
-    //var iPos = parseInt($(this).attr("data-i"));
-    //var jPos = parseInt($(this).attr("data-j"));
 
-
-
-    if(cupo.i + 1 === empty_cell.i && cupo.j === empty_cell.j) {
+    if(cur_pos.i + 1 === empty_cell.i && cur_pos.j === empty_cell.j) {
         applyMove(current_state, empty_cell, HAUT);
         console.log("H");
-    } else if (cupo.i - 1 === empty_cell.i && cupo.j === empty_cell.j) {
+    } else if (cur_pos.i - 1 === empty_cell.i && cur_pos.j === empty_cell.j) {
         applyMove(current_state, empty_cell, BAS);
         console.log("B");
-    } else if (cupo.i === empty_cell.i && cupo.j + 1 === empty_cell.j) {
+    } else if (cur_pos.i === empty_cell.i && cur_pos.j + 1 === empty_cell.j) {
         applyMove(current_state, empty_cell, GAUCHE);
         console.log("G");
-    } else if (cupo.i === empty_cell.i && cupo.j - 1 === empty_cell.j) {
+    } else if (cur_pos.i === empty_cell.i && cur_pos.j - 1 === empty_cell.j) {
         applyMove(current_state, empty_cell, DROITE);
         console.log("D");
     } else {
-        console.log("nothing")
+        console.log("no move possible!")
     }
 
     displayState(current_state);
@@ -240,7 +230,7 @@ span.onclick = function () {
 
 // On ferme aussi si on clique n'importe où
 window.onclick = function (event) {
-    if (event.target == modal) {
+    if (event.target === modal) {
         modal.style.display = "none";
     }
 }
@@ -265,7 +255,6 @@ function checkKey(e) {
         // right arrow
         applyMove(current_state, empty_cell, DROITE);
     }
-    console.log(win_state);
     console.log(current_state);
     displayState(current_state);
     if (checkWin(current_state)) {
@@ -274,9 +263,8 @@ function checkKey(e) {
 }
 
 function checkWin(state) {
-    var l = side;
-    for (var i = 0; i < l; i++) {
-        for (var j = 0; j < l; j++) {
+    for (let i = 0; i < side; i++) {
+        for (let j = 0; j < side; j++) {
             if(state[i][j] !== win_state[i][j]) {
                 return false;
             }
