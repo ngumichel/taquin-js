@@ -39,44 +39,44 @@ function setInitState() {
 }
 
 // Randomiser l'état courant
-function doRandomShuffle(state, cell) {
-    let temp_state = [];
+function doRandomShuffle() {
 
-    for ( let i = 0; i < side*side; i++) {
-        temp_state.push(i);
-    }
+    let randMove = 0;
+    let randMoveMax = side * side * side;
 
-    console.log(temp_state);
+    applyRandMove(randMove, randMoveMax);
 
-    temp_state.sort(function (a, b) {
-        return 0.5 - Math.random()
-    });
-
-    for (let i = 0; i < side; i++) {
-        for (let j = 0; j < side; j++) {
-            state[i][j] = temp_state[i * side + j];
-            if (temp_state[i * side + j] === 0) {
-                cell.i = i;
-                cell.j = j;
-            }
-        }
-    }
-    console.log(empty_cell);
 }
 
+function applyRandMove(randMove, randMoveMax) {
 
-function applyMove(state, ec, move) {
+    let availableMove = findMove();
+    let chosenMove = availableMove[Math.floor(Math.random() * availableMove.length)];
 
-    var haut = {i: ec.i - 1, j: ec.j};
-    var bas = {i: ec.i + 1, j: ec.j};
-    var gauche = {i: ec.i, j: ec.j - 1};
-    var droite = {i: ec.i, j: ec.j + 1};
+    applyMove(chosenMove);
+
+    randMove++;
+
+    if (randMove < randMoveMax) {
+        setTimeout(function () {
+            applyRandMove(randMove, randMoveMax)
+        }, 100);
+    }
+
+}
+
+function applyMove(move) {
+
+    var haut = {i: empty_cell.i - 1, j: empty_cell.j};
+    var bas = {i: empty_cell.i + 1, j: empty_cell.j};
+    var gauche = {i: empty_cell.i, j: empty_cell.j - 1};
+    var droite = {i: empty_cell.i, j: empty_cell.j + 1};
 
     switch (move) {
         case "H":
-            if (ec.i - 1 >= 0) {
-                state[ec.i][ec.j] = state[ec.i - 1][ec.j];
-                state[ec.i - 1][ec.j] = 0;
+            if (empty_cell.i - 1 >= 0) {
+                current_state[empty_cell.i][empty_cell.j] = current_state[empty_cell.i - 1][empty_cell.j];
+                current_state[empty_cell.i - 1][empty_cell.j] = 0;
                 empty_cell.i = haut.i;
                 empty_cell.j = haut.j;
             } else {
@@ -84,9 +84,9 @@ function applyMove(state, ec, move) {
             }
             break;
         case "B":
-            if (ec.i + 1 <= side - 1) {
-                state[ec.i][ec.j] = state[ec.i + 1][ec.j];
-                state[ec.i + 1][ec.j] = 0;
+            if (empty_cell.i + 1 <= side - 1) {
+                current_state[empty_cell.i][empty_cell.j] = current_state[empty_cell.i + 1][empty_cell.j];
+                current_state[empty_cell.i + 1][empty_cell.j] = 0;
                 empty_cell.i = bas.i;
                 empty_cell.j = bas.j;
             } else {
@@ -94,9 +94,9 @@ function applyMove(state, ec, move) {
             }
             break;
         case "D":
-            if (ec.j + 1 <= side - 1) {
-                state[ec.i][ec.j] = state[ec.i][ec.j + 1];
-                state[ec.i][ec.j + 1] = 0;
+            if (empty_cell.j + 1 <= side - 1) {
+                current_state[empty_cell.i][empty_cell.j] = current_state[empty_cell.i][empty_cell.j + 1];
+                current_state[empty_cell.i][empty_cell.j + 1] = 0;
                 empty_cell.i = droite.i;
                 empty_cell.j = droite.j;
             } else {
@@ -104,9 +104,9 @@ function applyMove(state, ec, move) {
             }
             break;
         case "G":
-            if (ec.j - 1 >= 0) {
-                state[ec.i][ec.j] = state[ec.i][ec.j - 1];
-                state[ec.i][ec.j - 1] = 0;
+            if (empty_cell.j - 1 >= 0) {
+                current_state[empty_cell.i][empty_cell.j] = current_state[empty_cell.i][empty_cell.j - 1];
+                current_state[empty_cell.i][empty_cell.j - 1] = 0;
                 empty_cell.i = gauche.i;
                 empty_cell.j = gauche.j;
             } else {
@@ -114,17 +114,16 @@ function applyMove(state, ec, move) {
             }
             break;
         default:
-            console.log("toto");
     }
+    displayState();
     console.log("Movement:", move)
 }
 
-
-function displayState(tab) {
+function displayState() {
     $(".grid").empty();
-    for (let i = 0; i < tab.length; i++) {
-        for (let j = 0; j < tab[i].length; j++) {
-            const elem = tab[i][j];
+    for (let i = 0; i < current_state.length; i++) {
+        for (let j = 0; j < current_state[i].length; j++) {
+            const elem = current_state[i][j];
             if (elem) {
                 const item = $(
                     `<div data-i="${i}" data-j="${j}" class="item">${elem}</div>`
@@ -147,8 +146,7 @@ $(".reset").click(reset);
 
 $(".shuffle").click(function () {
     // pas le temps de faire le shuffle
-    doRandomShuffle(current_state, empty_cell);
-    displayState(current_state);
+    doRandomShuffle();
 });
 
 $(".solution").click(function () {
@@ -182,7 +180,7 @@ $(".grid").on('click', '.item', function () {
         j: parseInt($(this).attr("data-j"))
     };
 
-    if(cur_pos.i + 1 === empty_cell.i && cur_pos.j === empty_cell.j) {
+    if (cur_pos.i + 1 === empty_cell.i && cur_pos.j === empty_cell.j) {
         applyMove(current_state, empty_cell, HAUT);
         console.log("H");
     } else if (cur_pos.i - 1 === empty_cell.i && cur_pos.j === empty_cell.j) {
@@ -198,7 +196,7 @@ $(".grid").on('click', '.item', function () {
         console.log("no move possible!")
     }
 
-    displayState(current_state);
+    displayState();
     if (checkWin(current_state)) {
         displayWin();
     }
@@ -244,19 +242,18 @@ function checkKey(e) {
 
     if (e.keyCode === 38) {
         // up arrow
-        applyMove(current_state, empty_cell, HAUT);
+        applyMove(HAUT);
     } else if (e.keyCode === 40) {
         // down arrow
-        applyMove(current_state, empty_cell, BAS);
+        applyMove(BAS);
     } else if (e.keyCode === 37) {
         // left arrow
-        applyMove(current_state, empty_cell, GAUCHE);
+        applyMove(GAUCHE);
     } else if (e.keyCode === 39) {
         // right arrow
-        applyMove(current_state, empty_cell, DROITE);
+        applyMove(DROITE);
     }
     console.log(current_state);
-    displayState(current_state);
     if (checkWin(current_state)) {
         displayWin();
     }
@@ -265,7 +262,7 @@ function checkKey(e) {
 function checkWin(state) {
     for (let i = 0; i < side; i++) {
         for (let j = 0; j < side; j++) {
-            if(state[i][j] !== win_state[i][j]) {
+            if (state[i][j] !== win_state[i][j]) {
                 return false;
             }
         }
@@ -273,9 +270,71 @@ function checkWin(state) {
     return true;
 }
 
+function findMove() {
+
+    let node = [];
+
+    if (empty_cell.i - 1 >= 0) {
+        node.push(HAUT);
+    }
+    if (empty_cell.i + 1 <= side - 1) {
+        node.push(BAS);
+    }
+    if (empty_cell.j - 1 >= 0) {
+        node.push(GAUCHE);
+    }
+    if (empty_cell.j + 1 <= side - 1) {
+        node.push(DROITE);
+    }
+    return node;
+}
+
+function findSolution() {
+
+    let visited = [];
+    let depth = 0;
+    let max_depth = 20;
+
+    if (DFS(current_state, visited, depth, max_depth)) {
+        console.log("win");
+    }
+
+}
+
+/**
+ * @return {boolean}
+ */
+function DFS(state, visited, depth, max_depth) {
+
+    let temp = [];
+    let nodes = findMove();
+    visited.push(state);
+    let stack = temp.concat(nodes);
+
+    if (state === win_state) {
+        return true;
+    }
+
+    while (stack !== 0) {
+        stack.forEach(function (node) {
+            let newState = applyMove(node);
+            console.log(stack);
+            stack.pop();
+            console.log(stack);
+            DFS(newState, visited, depth + 1, max_depth)
+        });
+
+        if (visited.includes(stack[0])) {
+            console.log("already visited");
+        }
+
+    }
+
+}
+
 function reset() {
     setInitState();
-    displayState(current_state);
+    displayState();
 }
 
 // Affichage initial : on fait un reset
