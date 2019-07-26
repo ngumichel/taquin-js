@@ -17,6 +17,10 @@ var current_state = [];
 var win_state = [];
 // position de la case vide
 const empty_cell = {i: 0, j: 0};
+// case deja visiter
+var visited = [];
+
+var temp_state = [];
 
 // Initialisation de l'état courant
 function setInitState() {
@@ -53,7 +57,7 @@ function applyRandMove(randMove, randMoveMax) {
     let availableMove = findMove();
     let chosenMove = availableMove[Math.floor(Math.random() * availableMove.length)];
 
-    applyMove(chosenMove);
+    applyMove(current_state, chosenMove, empty_cell);
 
     randMove++;
 
@@ -65,65 +69,65 @@ function applyRandMove(randMove, randMoveMax) {
 
 }
 
-function applyMove(move) {
+function applyMove(state, move, cell) {
 
-    var haut = {i: empty_cell.i - 1, j: empty_cell.j};
-    var bas = {i: empty_cell.i + 1, j: empty_cell.j};
-    var gauche = {i: empty_cell.i, j: empty_cell.j - 1};
-    var droite = {i: empty_cell.i, j: empty_cell.j + 1};
+    var haut = {i: cell.i - 1, j: cell.j};
+    var bas = {i: cell.i + 1, j: cell.j};
+    var gauche = {i: cell.i, j: cell.j - 1};
+    var droite = {i: cell.i, j: cell.j + 1};
 
     switch (move) {
         case "H":
-            if (empty_cell.i - 1 >= 0) {
-                current_state[empty_cell.i][empty_cell.j] = current_state[empty_cell.i - 1][empty_cell.j];
-                current_state[empty_cell.i - 1][empty_cell.j] = 0;
-                empty_cell.i = haut.i;
-                empty_cell.j = haut.j;
+            if (cell.i - 1 >= 0) {
+                state[cell.i][cell.j] = state[cell.i - 1][cell.j];
+                state[cell.i - 1][cell.j] = 0;
+                cell.i = haut.i;
+                cell.j = haut.j;
             } else {
                 console.log("Out of bound!!");
             }
             break;
         case "B":
-            if (empty_cell.i + 1 <= side - 1) {
-                current_state[empty_cell.i][empty_cell.j] = current_state[empty_cell.i + 1][empty_cell.j];
-                current_state[empty_cell.i + 1][empty_cell.j] = 0;
-                empty_cell.i = bas.i;
-                empty_cell.j = bas.j;
+            if (cell.i + 1 <= side - 1) {
+                [state[cell.i][cell.j], state[cell.i + 1][cell.j]] = [state[cell.i + 1][cell.j], state[cell.i][cell.j]];
+                cell.i = bas.i;
+                cell.j = bas.j;
             } else {
                 console.log("Out of bound!!");
             }
             break;
         case "D":
-            if (empty_cell.j + 1 <= side - 1) {
-                current_state[empty_cell.i][empty_cell.j] = current_state[empty_cell.i][empty_cell.j + 1];
-                current_state[empty_cell.i][empty_cell.j + 1] = 0;
-                empty_cell.i = droite.i;
-                empty_cell.j = droite.j;
+            if (cell.j + 1 <= side - 1) {
+                state[cell.i][cell.j] = state[cell.i][cell.j + 1];
+                state[cell.i][cell.j + 1] = 0;
+                cell.i = droite.i;
+                cell.j = droite.j;
             } else {
                 console.log("Out of bound!!");
             }
             break;
         case "G":
-            if (empty_cell.j - 1 >= 0) {
-                current_state[empty_cell.i][empty_cell.j] = current_state[empty_cell.i][empty_cell.j - 1];
-                current_state[empty_cell.i][empty_cell.j - 1] = 0;
-                empty_cell.i = gauche.i;
-                empty_cell.j = gauche.j;
+            if (cell.j - 1 >= 0) {
+                state[cell.i][cell.j] = state[cell.i][cell.j - 1];
+                state[cell.i][cell.j - 1] = 0;
+                cell.i = gauche.i;
+                cell.j = gauche.j;
             } else {
                 console.log("Out of bound!!");
             }
             break;
         default:
     }
-    displayState();
-    console.log("Movement:", move)
+    displayState(state);
+    console.log("Movement:", move);
+    return state;
 }
 
-function displayState() {
+function displayState(state) {
     $(".grid").empty();
-    for (let i = 0; i < current_state.length; i++) {
-        for (let j = 0; j < current_state[i].length; j++) {
-            const elem = current_state[i][j];
+    for (let i = 0; i < state.length; i++) {
+        for (let j = 0; j < state[i].length; j++) {
+            const elem = state[i][j];
             if (elem) {
                 const item = $(
                     `<div data-i="${i}" data-j="${j}" class="item">${elem}</div>`
@@ -181,22 +185,22 @@ $(".grid").on('click', '.item', function () {
     };
 
     if (cur_pos.i + 1 === empty_cell.i && cur_pos.j === empty_cell.j) {
-        applyMove(current_state, empty_cell, HAUT);
+        applyMove(current_state, HAUT, empty_cell);
         console.log("H");
     } else if (cur_pos.i - 1 === empty_cell.i && cur_pos.j === empty_cell.j) {
-        applyMove(current_state, empty_cell, BAS);
+        applyMove(current_state, BAS, empty_cell);
         console.log("B");
     } else if (cur_pos.i === empty_cell.i && cur_pos.j + 1 === empty_cell.j) {
-        applyMove(current_state, empty_cell, GAUCHE);
+        applyMove(current_state, GAUCHE, empty_cell);
         console.log("G");
     } else if (cur_pos.i === empty_cell.i && cur_pos.j - 1 === empty_cell.j) {
-        applyMove(current_state, empty_cell, DROITE);
+        applyMove(current_state, DROITE, empty_cell);
         console.log("D");
     } else {
         console.log("no move possible!")
     }
 
-    displayState();
+    displayState(current_state);
     if (checkWin(current_state)) {
         displayWin();
     }
@@ -242,16 +246,16 @@ function checkKey(e) {
 
     if (e.keyCode === 38) {
         // up arrow
-        applyMove(HAUT);
+        applyMove(current_state, HAUT, empty_cell);
     } else if (e.keyCode === 40) {
         // down arrow
-        applyMove(BAS);
+        applyMove(current_state, BAS, empty_cell);
     } else if (e.keyCode === 37) {
         // left arrow
-        applyMove(GAUCHE);
+        applyMove(current_state, GAUCHE, empty_cell);
     } else if (e.keyCode === 39) {
         // right arrow
-        applyMove(DROITE);
+        applyMove(current_state, DROITE, empty_cell);
     }
     console.log(current_state);
     if (checkWin(current_state)) {
@@ -268,6 +272,17 @@ function checkWin(state) {
         }
     }
     return true;
+}
+
+function getCurrentState(state) {
+    let l = side;
+    for (let i = 0; i < l; i++) {
+        temp_state[i] = [];
+        for (let j = 0; j < l; j++) {
+            temp_state[i][j] = state[i][j];
+        }
+    }
+    return temp_state;
 }
 
 function findMove() {
@@ -289,52 +304,69 @@ function findMove() {
     return node;
 }
 
-function findSolution() {
+function checkMove(move, state, stack) {
 
-    let visited = [];
-    let depth = 0;
-    let max_depth = 20;
+    const tmp_h = getCurrentState(state).slice();
+    const tmp_g = getCurrentState(state).slice();
+    const tmp_b = getCurrentState(state).slice();
+    const tmp_d = getCurrentState(state).slice();
 
-    if (DFS(current_state, visited, depth, max_depth)) {
-        console.log("win");
+    let temp_h = applyMove(getCurrentState(tmp_h).slice(), HAUT, empty_cell);
+    let temp_b = applyMove(getCurrentState(tmp_b).slice(), BAS, empty_cell);
+    let temp_g = applyMove(getCurrentState(tmp_g).slice(), GAUCHE, empty_cell);
+    let temp_d = applyMove(getCurrentState(tmp_d).slice(), DROITE, empty_cell);
+    console.log("temp " + temp_b);
+
+    if (move === "H" && !visited.includes(temp_h)) {
+        //applyMove(move);
+    } else if (move === "G" && !visited.includes(temp_g)) {
+        //applyMove(move);
+    } else if (move === "B" && !visited.includes(temp_b)) {
+        //applyMove(move);
+    } else if (move === "D" && !visited.includes(temp_d)) {
+        //applyMove(move);
+
     }
 
 }
 
+
 /**
  * @return {boolean}
  */
-function DFS(state, visited, depth, max_depth) {
-
+function DFS(depth, max_depth) {
+    let state = getCurrentState(current_state).slice();
     let temp = [];
     let nodes = findMove();
-    visited.push(state);
     let stack = temp.concat(nodes);
+    console.log("current stack " + state + "\n");
+    visited.push(state);
 
     if (state === win_state) {
         return true;
     }
 
     while (stack !== 0) {
-        stack.forEach(function (node) {
-            let newState = applyMove(node);
-            console.log(stack);
-            stack.pop();
-            console.log(stack);
-            DFS(newState, visited, depth + 1, max_depth)
-        });
+        for (let i = 0; i < stack.length; i++) {
+            checkMove(stack[i], state, stack);
 
-        if (visited.includes(stack[0])) {
-            console.log("already visited");
+            stack.shift();
+            console.log("popped stack " + stack + "\n");
+            DFS(depth + 1, max_depth)
         }
-
     }
-
 }
+
+function findSolution() {
+    if (DFS(0, 20)) {
+        console.log("win");
+    }
+}
+
 
 function reset() {
     setInitState();
-    displayState();
+    displayState(current_state);
 }
 
 // Affichage initial : on fait un reset

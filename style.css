@@ -16,6 +16,11 @@ body {
   overflow: hidden;
   font-family: sans-serif;
 }
+
+button {
+  background-color: #fff2;
+}
+
 .grid {
   display: grid;
   /* pour ajuster automatiquement en fonction du nombre de cases par côté */
